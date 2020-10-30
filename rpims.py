@@ -17,7 +17,7 @@
 def doors_sensors(**kwargs):
     from signal import pause
     from gpiozero import Button
-    import redis
+    from gpiozero.tools import all_values
 
     def door_action_closed(door_id, **kwargs):
         lconfig = dict(kwargs)
@@ -82,25 +82,49 @@ def doors_sensors(**kwargs):
 
     pause()
 
-def motion_sensor_when_motion(ms_id, **kwargs):
-    redis_db.set(str(ms_id), 'motion')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(ms_id) + ": motion was detected")
-    if bool(kwargs['use_zabbix_sender']) is True:
-        zabbix_sender_call('info_when_motion', ms_id)
-    if bool(kwargs['use_picamera']) is True:
-        av_stream('start')
 
+def motions_sensors(**kwargs):
+    from signal import pause
+    from gpiozero import MotionSensor
+    from gpiozero.tools import any_values
 
-def motion_sensor_when_no_motion(ms_id, **kwargs):
-    lconfig = dict(kwargs)
-    redis_db.set(str(ms_id), 'nomotion')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(ms_id) + ": no motion")
-    if bool(kwargs['use_picamera']) is True:
-        if detect_no_alarms(**lconfig):
-            av_stream('stop')
+    def motion_sensor_when_motion(ms_id, **kwargs):
+        redis_db.set(str(ms_id), 'motion')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(ms_id) + ": motion was detected")
+        if bool(kwargs['use_zabbix_sender']) is True:
+            zabbix_sender_call('info_when_motion', ms_id)
+        if bool(kwargs['use_picamera']) is True:
+            av_stream('start')
 
+    def motion_sensor_when_no_motion(ms_id, **kwargs):
+        lconfig = dict(kwargs)
+        redis_db.set(str(ms_id), 'nomotion')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(ms_id) + ": no motion")
+        if bool(kwargs['use_picamera']) is True:
+            if detect_no_alarms(**lconfig):
+                av_stream('stop')
+
+    motion_sensors_list = {}
+    redis_db.delete("motion_sensors")
+    for item in kwargs.get("motion_sensors"):
+        motion_sensors_list[item] = MotionSensor(kwargs['motion_sensors'][item]['gpio_pin'])
+        redis_db.sadd("motion_sensors", item)
+
+    for s in motion_sensors_list:
+        if motion_sensors_list[s].value == 0:
+            motion_sensor_when_no_motion(s, **kwargs['config'])
+        else:
+            motion_sensor_when_motion(s, **kwargs['config'])
+
+    for s in motion_sensors_list:
+        motion_sensors_list[s].when_motion = lambda s=s:motion_sensor_when_motion(s, **kwargs['config'])
+        motion_sensors_list[s].when_no_motion = lambda s=s:motion_sensor_when_no_motion(s, **kwargs['config'])
+
+    if bool(kwargs['config']['use_led_indicators']) is True:
+        led_indicators_list['motion_led'].source = any_values(*motion_sensors_list.values())
+    pause()
 
 def detect_no_alarms(**kwargs):
     if bool(kwargs['use_door_sensor']) is True and bool(kwargs['use_motion_sensor']) is True:
@@ -672,7 +696,7 @@ def wind_direction(**kwargs):
                 # print(r2,uin,uout)
             else:
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print("uin = ", uin)
+                print("Uin = ", uin)
                 print("Uout = ", uout)
                 print("Check sensor connections to ADC")
                 print("Wind Direction Meter program was terminated")
@@ -732,11 +756,7 @@ def use_logger():
 
 
 def main():
-    # from picamera import PiCamera
-    from gpiozero import LED, Button, MotionSensor
-    from gpiozero.tools import all_values, any_values
-    from signal import pause
-    # import logging
+    from gpiozero import LED
     import sys
 
     print('# RPiMS is running #')
@@ -769,20 +789,16 @@ def main():
         if bool(config['verbose']) is True:
             print(s + ' = ' + str(zabbix_agent[s]))
 
-    doors_sensors_config = {}
-    doors_sensors_config['config'] = (config_yaml['setup'])
-    doors_sensors_config['door_sensors'] = (config_yaml['door_sensors'])
+    m_config = {}
+    m_config['config'] = (config_yaml['setup'])
+    m_config['door_sensors'] = (config_yaml['door_sensors'])
+    m_config['motion_sensors'] = (config_yaml['motion_sensors'])
 
     if bool(config['use_door_sensor']) is True:
-        doors_sensors(**doors_sensors_config)
+        doors_sensors(**m_config)
 
     if bool(config['use_motion_sensor']) is True:
-        global motion_sensors_list
-        motion_sensors_list = {}
-        redis_db.delete("motion_sensors")
-        for item in config_yaml.get("motion_sensors"):
-            motion_sensors_list[item] = MotionSensor(config_yaml['motion_sensors'][item]['gpio_pin'])
-            redis_db.sadd("motion_sensors", item)
+        motions_sensors(**m_config)
 
     if bool(config['use_system_buttons']) is True:
         global system_buttons_list
@@ -795,18 +811,6 @@ def main():
         led_indicators_list = {}
         for item in config_yaml.get("led_indicators"):
             led_indicators_list[item] = LED(config_yaml['led_indicators'][item]['gpio_pin'])
-
-    if bool(config['use_motion_sensor']) is True:
-        for s in motion_sensors_list:
-            if motion_sensors_list[s].value == 0:
-                motion_sensor_when_no_motion(s, **config)
-            else:
-                motion_sensor_when_motion(s, **config)
-        for s in motion_sensors_list:
-            motion_sensors_list[s].when_motion = lambda s=s: motion_sensor_when_motion(s, **config)
-            motion_sensors_list[s].when_no_motion = lambda s=s: motion_sensor_when_no_motion(s, **config)
-        if bool(config['use_led_indicators']) is True:
-            led_indicators_list['motion_led'].source = any_values(*motion_sensors_list.values())
 
     if bool(config['use_system_buttons']) is True:
         system_buttons_list['shutdown_button'].when_held = shutdown
@@ -833,8 +837,6 @@ def main():
 
     if bool(config['use_picamera']) is True and bool(config['use_picamera_recording']) is False and bool(config['use_door_sensor']) is False and bool(config['use_motion_sensor']) is False:
         av_stream('start')
-
-    pause()
 
 
 # --- Main program ---
