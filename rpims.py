@@ -15,6 +15,9 @@
 
 # --- Functions ---
 def doors_sensors(**kwargs):
+    from signal import pause
+    from gpiozero import Button
+    import redis
 
     def door_action_closed(door_id, **kwargs):
         lconfig = dict(kwargs)
@@ -62,21 +65,22 @@ def doors_sensors(**kwargs):
     door_sensors_list = {}
     redis_db.delete("door_sensors")
 
-    for item in config_yaml.get("door_sensors"):
-        door_sensors_list[item] = Button(config_yaml['door_sensors'][item]['gpio_pin'], hold_time=config_yaml['door_sensors'][item]['hold_time'])
+    for item in kwargs.get("door_sensors"):
+        door_sensors_list[item] = Button(kwargs['door_sensors'][item]['gpio_pin'], hold_time=kwargs['door_sensors'][item]['hold_time'])
         redis_db.sadd("door_sensors", item)
     for s in door_sensors_list:
         if door_sensors_list[s].value == 0:
-            door_status_open(s, **config)
+            door_status_open(s, **kwargs['config'])
         else:
-            door_status_close(s, **config)
+            door_status_close(s, **kwargs['config'])
     for s in door_sensors_list:
-        door_sensors_list[s].when_held = lambda s=s: door_action_closed(s, **config)
-        door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **config)
+        door_sensors_list[s].when_held = lambda s=s: door_action_closed(s, **kwargs['config'])
+        door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **kwargs['config'])
 
-    if bool(config['use_led_indicators']) is True:
+    if bool(kwargs['config']['use_led_indicators']) is True:
         led_indicators_list['door_led'].source = all_values(*door_sensors_list.values())
 
+    pause()
 
 def motion_sensor_when_motion(ms_id, **kwargs):
     redis_db.set(str(ms_id), 'motion')
@@ -266,6 +270,7 @@ def serial_displays(**kwargs):
         from PIL import ImageFont
         from time import sleep
         import logging
+        import redis
         # import socket
 
         # Load default font.
@@ -754,8 +759,22 @@ def main():
     zabbix_agent = config_yaml['zabbix_agent']
     hostnamectl_sh(**zabbix_agent)
 
+    for s in config:
+        redis_db.set(s, str(config[s]))
+        if bool(config['verbose']) is True:
+            print(s + ' = ' + str(config[s]))
+
+    for s in zabbix_agent:
+        redis_db.set(s, str(zabbix_agent[s]))
+        if bool(config['verbose']) is True:
+            print(s + ' = ' + str(zabbix_agent[s]))
+
+    doors_sensors_config = {}
+    doors_sensors_config['config'] = (config_yaml['setup'])
+    doors_sensors_config['door_sensors'] = (config_yaml['door_sensors'])
+
     if bool(config['use_door_sensor']) is True:
-        doors_sensors(**config)
+        doors_sensors(**doors_sensors_config)
 
     if bool(config['use_motion_sensor']) is True:
         global motion_sensors_list
@@ -776,25 +795,6 @@ def main():
         led_indicators_list = {}
         for item in config_yaml.get("led_indicators"):
             led_indicators_list[item] = LED(config_yaml['led_indicators'][item]['gpio_pin'])
-
-    if bool(config['verbose']) is True:
-        print('')
-
-    for s in config:
-        redis_db.set(s, str(config[s]))
-        if bool(config['verbose']) is True:
-            print(s + ' = ' + str(config[s]))
-
-    if bool(config['verbose']) is True:
-        print('')
-
-    for s in zabbix_agent:
-        redis_db.set(s, str(zabbix_agent[s]))
-        if bool(config['verbose']) is True:
-            print(s + ' = ' + str(zabbix_agent[s]))
-
-    if bool(config['verbose']) is True:
-        print('')
 
     if bool(config['use_motion_sensor']) is True:
         for s in motion_sensors_list:
