@@ -666,6 +666,7 @@ def wind_direction(**kwargs):
     while True:
         start_time = time()
         angles.clear()
+        adc_values = []
         while time() - start_time <= wind_direction_acquisition_time:
             if kwargs['winddirection_adc_type'] == 'AutomationPhat':
                 adc_values = adc_automationphat()
@@ -790,10 +791,10 @@ def main():
         if bool(config['verbose']) is True:
             print(s + ' = ' + str(zabbix_agent[s]))
 
-    m_config = {}
-    m_config['config'] = (config_yaml['setup'])
-    m_config['door_sensors'] = (config_yaml['door_sensors'])
-    m_config['motion_sensors'] = (config_yaml['motion_sensors'])
+    m_config = {'config': (config_yaml['setup']),
+                'door_sensors': (config_yaml['door_sensors']),
+                'motion_sensors': (config_yaml['motion_sensors'])
+                }
 
     if bool(config['use_door_sensor']) is True:
         doors_sensors(**m_config)
