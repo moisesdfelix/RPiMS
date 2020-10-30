@@ -127,25 +127,26 @@ def motions_sensors(**kwargs):
     pause()
 
 def detect_no_alarms(**kwargs):
-    if bool(kwargs['use_door_sensor']) is True and bool(kwargs['use_motion_sensor']) is True:
+    if bool(kwargs['config']['use_door_sensor']) is True and bool(kwargs['config']['use_motion_sensor']) is True:
+
         door_sensor_values = []
         motion_sensor_values = []
-        for s in door_sensors_list:
-            door_sensor_values.append(door_sensors_list[s].value)
-        for s in motion_sensors_list:
-            motion_sensor_values.append(int(not motion_sensors_list[s].value))
+        for k, v in kwargs['door_sensors'].items:
+            door_sensor_values.append(v.value)
+        for k, v in kwargs['motion_sensors'].items:
+            motion_sensor_values.append(int(not v.value))
         if all(door_sensor_values) and all(motion_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is True and bool(kwargs['use_motion_sensor']) is False:
         door_sensor_values = []
-        for s in door_sensors_list:
-            door_sensor_values.append(door_sensors_list[s].value)
+        for k, v in kwargs['door_sensors'].items:
+            door_sensor_values.append(v.value)
         if all(door_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is False and bool(kwargs['use_motion_sensor']) is True:
         motion_sensor_values = []
-        for s in motion_sensors_list:
-            motion_sensor_values.append(int(not motion_sensors_list[s].value))
+        for k, v in kwargs['motion_sensors'].items:
+            motion_sensor_values.append(int(not v.value))
         if all(motion_sensor_values):
             return True
 
