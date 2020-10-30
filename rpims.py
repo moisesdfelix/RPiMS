@@ -14,52 +14,68 @@
 #  GNU General Public License for more details.
 
 # --- Functions ---
+def doors_sensors(**kwargs):
 
-def door_action_closed(door_id, **kwargs):
-    lconfig = dict(kwargs)
-    redis_db.set(str(door_id), 'close')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(door_id) + " has been closed!")
-    if bool(kwargs['use_zabbix_sender']) is True:
-        zabbix_sender_call('info_when_door_has_been_closed', door_id)
-    if bool(kwargs['use_picamera']) is True:
-        if detect_no_alarms(**lconfig):
-            av_stream('stop')
+    def door_action_closed(door_id, **kwargs):
+        lconfig = dict(kwargs)
+        redis_db.set(str(door_id), 'close')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(door_id) + " has been closed!")
+        if bool(kwargs['use_zabbix_sender']) is True:
+            zabbix_sender_call('info_when_door_has_been_closed', door_id)
+        if bool(kwargs['use_picamera']) is True:
+            if detect_no_alarms(**lconfig):
+                av_stream('stop')
 
+    def door_action_opened(door_id, **kwargs):
+        redis_db.set(str(door_id), 'open')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(door_id) + " has been opened!")
+        if bool(kwargs['use_zabbix_sender']) is True:
+            zabbix_sender_call('info_when_door_has_been_opened', door_id)
+        if bool(kwargs['use_picamera']) is True:
+            if bool(kwargs['use_picamera_recording']) is True:
+                av_stream('stop')
+                av_recording()
+            av_stream('start')
 
-def door_action_opened(door_id, **kwargs):
-    redis_db.set(str(door_id), 'open')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(door_id) + " has been opened!")
-    if bool(kwargs['use_zabbix_sender']) is True:
-        zabbix_sender_call('info_when_door_has_been_opened', door_id)
-    if bool(kwargs['use_picamera']) is True:
-        if bool(kwargs['use_picamera_recording']) is True:
-            av_stream('stop')
-            av_recording()
-        av_stream('start')
+    def door_status_open(door_id, **kwargs):
+        redis_db.set(str(door_id), 'open')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(door_id) + " is opened!")
+        if bool(kwargs['use_zabbix_sender']) is True:
+            zabbix_sender_call('info_when_door_is_opened', door_id)
+        if bool(kwargs['use_picamera']) is True:
+            av_stream('start')
 
+    def door_status_close(door_id, **kwargs):
+        lconfig = dict(kwargs)
+        redis_db.set(str(door_id), 'close')
+        if bool(kwargs['verbose']) is True:
+            print("The " + str(door_id) + " is closed!")
+        if bool(kwargs['use_zabbix_sender']) is True:
+            zabbix_sender_call('info_when_door_is_closed', door_id)
+        if bool(kwargs['use_picamera']) is True:
+            if detect_no_alarms(**lconfig):
+                av_stream('stop')
 
-def door_status_open(door_id, **kwargs):
-    redis_db.set(str(door_id), 'open')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(door_id) + " is opened!")
-    if bool(kwargs['use_zabbix_sender']) is True:
-        zabbix_sender_call('info_when_door_is_opened', door_id)
-    if bool(kwargs['use_picamera']) is True:
-        av_stream('start')
+    door_sensors_list = {}
+    redis_db.delete("door_sensors")
 
+    for item in config_yaml.get("door_sensors"):
+        door_sensors_list[item] = Button(config_yaml['door_sensors'][item]['gpio_pin'], hold_time=config_yaml['door_sensors'][item]['hold_time'])
+        redis_db.sadd("door_sensors", item)
+    for s in door_sensors_list:
+        if door_sensors_list[s].value == 0:
+            door_status_open(s, **config)
+        else:
+            door_status_close(s, **config)
+    for s in door_sensors_list:
+        door_sensors_list[s].when_held = lambda s=s: door_action_closed(s, **config)
+        door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **config)
 
-def door_status_close(door_id, **kwargs):
-    lconfig = dict(kwargs)
-    redis_db.set(str(door_id), 'close')
-    if bool(kwargs['verbose']) is True:
-        print("The " + str(door_id) + " is closed!")
-    if bool(kwargs['use_zabbix_sender']) is True:
-        zabbix_sender_call('info_when_door_is_closed', door_id)
-    if bool(kwargs['use_picamera']) is True:
-        if detect_no_alarms(**lconfig):
-            av_stream('stop')
+    if bool(config['use_led_indicators']) is True:
+        led_indicators_list['door_led'].source = all_values(*door_sensors_list.values())
 
 
 def motion_sensor_when_motion(ms_id, **kwargs):
@@ -739,12 +755,7 @@ def main():
     hostnamectl_sh(**zabbix_agent)
 
     if bool(config['use_door_sensor']) is True:
-        global door_sensors_list
-        door_sensors_list = {}
-        redis_db.delete("door_sensors")
-        for item in config_yaml.get("door_sensors"):
-            door_sensors_list[item] = Button(config_yaml['door_sensors'][item]['gpio_pin'], hold_time=config_yaml['door_sensors'][item]['hold_time'])
-            redis_db.sadd("door_sensors", item)
+        doors_sensors(**config)
 
     if bool(config['use_motion_sensor']) is True:
         global motion_sensors_list
@@ -784,18 +795,6 @@ def main():
 
     if bool(config['verbose']) is True:
         print('')
-
-    if bool(config['use_door_sensor']) is True:
-        for s in door_sensors_list:
-            if door_sensors_list[s].value == 0:
-                door_status_open(s, **config)
-            else:
-                door_status_close(s, **config)
-        for s in door_sensors_list:
-            door_sensors_list[s].when_held = lambda s=s: door_action_closed(s, **config)
-            door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **config)
-        if bool(config['use_led_indicators']) is True:
-            led_indicators_list['door_led'].source = all_values(*door_sensors_list.values())
 
     if bool(config['use_motion_sensor']) is True:
         for s in motion_sensors_list:
