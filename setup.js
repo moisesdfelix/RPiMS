@@ -1,15 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
-
 var tlspskidentityid = "TLSPSKIdentity";
 var tlspskid = "TLSPSK";
 
 /* Function to generate combination of PSK */
 function generateP(lenght) {
-	var pass = '';
+        var pass = '';
         var str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
                     'abcdefghijklmnopqrstuvwxyz0123456789';
         for (i = 1; i <= lenght; i++) {
-        	var char = Math.floor(Math.random()
+                var char = Math.floor(Math.random()
                             * str.length + 1);
                 pass += str.charAt(char)
             }
@@ -20,4 +18,60 @@ function generateP(lenght) {
             document.getElementById(id).value =  generateP(psk_len);
         }
 
+var myObj;
+myObj =  [ "GPIO_5", "GPIO_6", "GPIO_13", "GPIO_16", "GPIO_19", "GPIO_20", "GPIO_21", "GPIO_22", "GPIO_23", "GPIO_26"]
+
+document.addEventListener("DOMContentLoaded", () => {
+    var i, x = "", y ;
+    for (i in myObj) {
+        x =  myObj[i];
+        var y = $("#" + x + "_TYPE").children("option:selected").val();
+            if (y != "DoorSensor") {
+                $("#" + x + "_TYPE_DoorSensor").hide();
+            }
+            else {
+                $("#" + x + "_TYPE_DoorSensor").show();
+            }
+    };
 });
+
+$('.gpioinputs').change(function(){
+            var selectedGPIOtype = $(this).children("option:selected").val();
+            var z = $(this).attr('id') + "_" + 'DoorSensor'
+            if (selectedGPIOtype == 'DoorSensor') {
+                $("#" + z).show();
+            }
+            else {
+                $("#" + z).hide();
+            }
+        });
+
+/*
+$('.gpioinputs').change(function(){
+            var selectedGPIOtype = $(this).children("option:selected").val();
+            //var y = $(this).attr('id') + "_" + selectedGPIOtype;
+            var z = $(this).attr('id') + "_" + 'DoorSensor'
+            //if (y.match(/^.*_DoorSensor$/)) {
+            if (selectedGPIOtype == 'DoorSensor') {
+                $("#" + z).show();
+            }
+            else {
+                $("#" + z).hide();
+            }
+        });
+*/
+
+/*
+$("#GPIO_5_TYPE").change(function(){
+            var selectedGPIOtype = $(this).children("option:selected").val();
+            console.log( selectedGPIOtype );
+            if (selectedGPIOtype != "DoorSensor") {
+                $("#GPIO_5_HT").hide();
+            }
+            else {
+                $("#GPIO_5_HT").show();
+                //$("#GPIO_5_ht_value").val("1").change();
+            }
+            //console.log( myObj );
+        });
+*/
