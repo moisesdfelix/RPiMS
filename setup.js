@@ -18,26 +18,29 @@ function generateP(lenght) {
             document.getElementById(id).value =  generateP(psk_len);
         }
 
-var myObj;
-myObj =  [ "GPIO_5", "GPIO_6", "GPIO_13", "GPIO_16", "GPIO_19", "GPIO_20", "GPIO_21", "GPIO_22", "GPIO_23", "GPIO_26"]
 
+/* When the page is loaded it shows the input Hold Time for the GPIO Button input type. 
+Hides the field for another GPIO input type value.  */
 document.addEventListener("DOMContentLoaded", () => {
-    var i, x = "", y ;
-    for (i in myObj) {
-        x =  myObj[i];
-        var y = $("#" + x + "_TYPE").children("option:selected").val();
-            if (y != "DoorSensor") {
-                $("#" + x + "_TYPE_DoorSensor").hide();
+$('.gpioinputs').each(function(){
+            var selectedGPIOtype = $(this).children("option:selected").val();
+            var z = $(this).attr('id') + "_" + 'DS'
+            if (selectedGPIOtype == 'DoorSensor') {
+                $("#" + z).show();
             }
             else {
-                $("#" + x + "_TYPE_DoorSensor").show();
+                $("#" + z).hide();
             }
-    };
+        });
 });
 
+
+/* Shows input Hold Time when GPIO input type is selected as Button, 
+and sets default hold time value to 1. 
+Hides this field when other GPIO input type is selected. */
 $('.gpioinputs').change(function(){
             var selectedGPIOtype = $(this).children("option:selected").val();
-            var z = $(this).attr('id') + "_" + 'DoorSensor'
+            var z = $(this).attr('id') + "_" + 'DS'
             if (selectedGPIOtype == 'DoorSensor') {
                 $("#" + z).show();
 		$("#" + z + "_HT").val("1");
@@ -46,4 +49,3 @@ $('.gpioinputs').change(function(){
                 $("#" + z).hide();
             }
         });
-

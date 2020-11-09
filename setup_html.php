@@ -292,7 +292,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_5[name]" type="text" value="<?=$GPIO['GPIO_5']['name']?>" size="30"></label></td>
-<td><label id="GPIO_5_TYPE_DoorSensor">Hold time: <input id="GPIO_5_TYPE_DoorSensor_HT" name="GPIO_5[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_5']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_5_TYPE_DS">Hold time: <input id="GPIO_5_TYPE_DS_HT" name="GPIO_5[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_5']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -306,7 +306,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_6[name]" type="text" value="<?=$GPIO['GPIO_6']['name']?>" size="30"></label></td>
-<td><label id="GPIO_6_TYPE_DoorSensor">Hold time: <input id="GPIO_6_ht_value" name="GPIO_6[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_6']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_6_TYPE_DS">Hold time: <input id="GPIO_6_TYPE_DS_HT" name="GPIO_6[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_6']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -320,7 +320,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_13[name]" type="text" value="<?=$GPIO['GPIO_13']['name']?>" size="30"></label></td>
-<td><label id="GPIO_13_TYPE_DoorSensor">Hold time: <input id="GPIO_13_ht_value" name="GPIO_13[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_13']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_13_TYPE_DS">Hold time: <input id="GPIO_13_TYPE_DS_HT" name="GPIO_13[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_13']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -334,7 +334,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_16[name]" type="text" value="<?=$GPIO['GPIO_16']['name']?>" size="30"></label></td>
-<td><label id="GPIO_16_TYPE_DoorSensor">Hold time: <input id="GPIO_16_ht_value" name="GPIO_16[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_16']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_16_TYPE_DS">Hold time: <input id="GPIO_16_TYPE_DS_HT" name="GPIO_16[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_16']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -348,7 +348,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_19[name]" type="text" value="<?=$GPIO['GPIO_19']['name']?>" size="30"></label></td>
-<td><label id="GPIO_19_TYPE_DoorSensor">Hold time: <input id="GPIO_19_ht_value" name="GPIO_19[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_19']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_19_TYPE_DS">Hold time: <input id="GPIO_19_TYPE_DS_HT" name="GPIO_19[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_19']['hold_time']?>" size="2"></label></td>
 </tr>
 
 
@@ -363,7 +363,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_20[name]" type="text" value="<?=$GPIO['GPIO_20']['name']?>" size="30"></label></td>
-<td><label id="GPIO_20_TYPE_DoorSensor">Hold time: <input id="GPIO_20_ht_value" name="GPIO_20[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_20']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_20_TYPE_DS">Hold time: <input id="GPIO_20_TYPE_DS_HT" name="GPIO_20[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_20']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -377,7 +377,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_21[name]" type="text" value="<?=$GPIO['GPIO_21']['name']?>" size="30"></label></td>
-<td><label id="GPIO_21_TYPE_DoorSensor">Hold time: <input id="GPIO_21_ht_value" name="GPIO_21[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_21']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_21_TYPE_DS">Hold time: <input id="GPIO_21_TYPE_DS_HT" name="GPIO_21[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_21']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -391,7 +391,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_22[name]" type="text" value="<?=$GPIO['GPIO_22']['name']?>" size="30"></label></td>
-<td><label id="GPIO_22_TYPE_DoorSensor">Hold time: <input id="GPIO_22_ht_value" name="GPIO_22[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_22']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_22_TYPE_DS">Hold time: <input id="GPIO_22_TYPE_DS_HT" name="GPIO_22[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_22']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -405,7 +405,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_23[name]" type="text" value="<?=$GPIO['GPIO_23']['name']?>" size="30"></label></td>
-<td><label id="GPIO_23_TYPE_DoorSensor">Hold time: <input id="GPIO_23_ht_value" name="GPIO_23[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_23']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_23_TYPE_DS">Hold time: <input id="GPIO_23_TYPE_DS_HT" name="GPIO_23[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_23']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>
@@ -419,7 +419,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_26[name]" type="text" value="<?=$GPIO['GPIO_26']['name']?>" size="30"></label></td>
-<td><label id="GPIO_26_TYPE_DoorSensor">Hold time: <input id="GPIO_26_ht_value" name="GPIO_26[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_26']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_26_TYPE_DS">Hold time: <input id="GPIO_26_TYPE_DS_HT" name="GPIO_26[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_26']['hold_time']?>" size="2"></label></td>
 </tr>
 
 </table>
