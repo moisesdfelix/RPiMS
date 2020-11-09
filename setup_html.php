@@ -292,7 +292,7 @@
 </select>
 </td>
 <td><label>Name: <input name="GPIO_5[name]" type="text" value="<?=$GPIO['GPIO_5']['name']?>" size="30"></label></td>
-<td><label id="GPIO_5_TYPE_DoorSensor">Hold time: <input id="GPIO_5_ht_value" name="GPIO_5[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_5']['hold_time']?>" size="2"></label></td>
+<td><label id="GPIO_5_TYPE_DoorSensor">Hold time: <input id="GPIO_5_TYPE_DoorSensor_HT" name="GPIO_5[hold_time]" type="number" min="1" max="60" value="<?=$GPIO['GPIO_5']['hold_time']?>" size="2"></label></td>
 </tr>
 
 <tr>

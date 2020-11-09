@@ -40,38 +40,10 @@ $('.gpioinputs').change(function(){
             var z = $(this).attr('id') + "_" + 'DoorSensor'
             if (selectedGPIOtype == 'DoorSensor') {
                 $("#" + z).show();
+		$("#" + z + "_HT").val("1");
             }
             else {
                 $("#" + z).hide();
             }
         });
 
-/*
-$('.gpioinputs').change(function(){
-            var selectedGPIOtype = $(this).children("option:selected").val();
-            //var y = $(this).attr('id') + "_" + selectedGPIOtype;
-            var z = $(this).attr('id') + "_" + 'DoorSensor'
-            //if (y.match(/^.*_DoorSensor$/)) {
-            if (selectedGPIOtype == 'DoorSensor') {
-                $("#" + z).show();
-            }
-            else {
-                $("#" + z).hide();
-            }
-        });
-*/
-
-/*
-$("#GPIO_5_TYPE").change(function(){
-            var selectedGPIOtype = $(this).children("option:selected").val();
-            console.log( selectedGPIOtype );
-            if (selectedGPIOtype != "DoorSensor") {
-                $("#GPIO_5_HT").hide();
-            }
-            else {
-                $("#GPIO_5_HT").show();
-                //$("#GPIO_5_ht_value").val("1").change();
-            }
-            //console.log( myObj );
-        });
-*/
