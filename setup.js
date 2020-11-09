@@ -1,3 +1,4 @@
+
 var tlspskidentityid = "TLSPSKIdentity";
 var tlspskid = "TLSPSK";
 
@@ -19,9 +20,10 @@ function generateP(lenght) {
         }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+
 /* When the page is loaded it shows the input Hold Time for the GPIO Button input type. 
 Hides the field for another GPIO input type value.  */
-document.addEventListener("DOMContentLoaded", () => {
 $('.gpioinputs').each(function(){
             var selectedGPIOtype = $(this).children("option:selected").val();
             var z = $(this).attr('id') + "_" + 'DS'
@@ -32,8 +34,6 @@ $('.gpioinputs').each(function(){
                 $("#" + z).hide();
             }
         });
-});
-
 
 /* Shows input Hold Time when GPIO input type is selected as Button, 
 and sets default hold time value to 1. 
@@ -49,3 +49,5 @@ $('.gpioinputs').change(function(){
                 $("#" + z).hide();
             }
         });
+
+});
