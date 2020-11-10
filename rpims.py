@@ -79,7 +79,6 @@ def doors_sensors(**kwargs):
 
     if bool(kwargs['config']['use_led_indicators']) is True:
         led_indicators_list['door_led'].source = all_values(*door_sensors_list.values())
-
     pause()
 
 
@@ -126,9 +125,9 @@ def motions_sensors(**kwargs):
         led_indicators_list['motion_led'].source = any_values(*motion_sensors_list.values())
     pause()
 
+
 def detect_no_alarms(**kwargs):
     if bool(kwargs['config']['use_door_sensor']) is True and bool(kwargs['config']['use_motion_sensor']) is True:
-
         door_sensor_values = []
         motion_sensor_values = []
         for k, v in kwargs['door_sensors'].items:
@@ -254,7 +253,7 @@ def get_dht_data(**kwargs):
     import adafruit_dht
     from time import sleep
 
-    debug = "no"
+    debug = "yes"
     delay = 0
     dht_device = adafruit_dht.DHT22(pin)
     if dht_type == "DHT11":
@@ -272,9 +271,13 @@ def get_dht_data(**kwargs):
             delay -= 1
             if delay < 0:
                 delay = 0
-        except RuntimeError as error:
+        except OverflowError as error:
             if debug is 'yes':
-                print("DHT - " + str(error.args[0]))
+                print("DHT - " + str(error))
+            delay += 1
+        except  RuntimeError as error:
+            if debug is 'yes':
+                print("DHT - " + str(error))
             delay += 1
         finally:
             if debug is 'yes':
@@ -759,6 +762,7 @@ def use_logger():
 
 def main():
     from gpiozero import LED
+    from signal import pause
     import sys
 
     print('# RPiMS is running #')
@@ -797,10 +801,10 @@ def main():
                 }
 
     if bool(config['use_door_sensor']) is True:
-        doors_sensors(**m_config)
+        threading_function(doors_sensors, **m_config)
 
     if bool(config['use_motion_sensor']) is True:
-        motions_sensors(**m_config)
+        threading_function(motions_sensors, **m_config)
 
     if bool(config['use_system_buttons']) is True:
         global system_buttons_list
@@ -839,6 +843,8 @@ def main():
 
     if bool(config['use_picamera']) is True and bool(config['use_picamera_recording']) is False and bool(config['use_door_sensor']) is False and bool(config['use_motion_sensor']) is False:
         av_stream('start')
+
+    pause()
 
 
 # --- Main program ---
