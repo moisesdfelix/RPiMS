@@ -14,9 +14,10 @@
 #  GNU General Public License for more details.
 
 # --- Functions ---
+
 def doors_sensors(**kwargs):
     from signal import pause
-    from gpiozero import Button
+    from gpiozero import Button, LED
     from gpiozero.tools import all_values
 
     def door_action_closed(door_id, **kwargs):
@@ -78,13 +79,14 @@ def doors_sensors(**kwargs):
         door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **kwargs['config'])
 
     if bool(kwargs['config']['use_led_indicators']) is True:
-        led_indicators_list['door_led'].source = all_values(*door_sensors_list.values())
+        door_led_indicator = LED(kwargs['led_indicators']['door_led']['gpio_pin'])
+        door_led_indicator.source = all_values(*door_sensors_list.values())
     pause()
 
 
 def motions_sensors(**kwargs):
     from signal import pause
-    from gpiozero import MotionSensor
+    from gpiozero import MotionSensor, LED
     from gpiozero.tools import any_values
 
     def motion_sensor_when_motion(ms_id, **kwargs):
@@ -122,7 +124,8 @@ def motions_sensors(**kwargs):
         motion_sensors_list[s].when_no_motion = lambda s=s:motion_sensor_when_no_motion(s, **kwargs['config'])
 
     if bool(kwargs['config']['use_led_indicators']) is True:
-        led_indicators_list['motion_led'].source = any_values(*motion_sensors_list.values())
+        motion_led_indicator = LED(kwargs['led_indicators']['motion_led']['gpio_pin'])
+        motion_led_indicator.source = any_values(*motion_sensors_list.values())
     pause()
 
 
@@ -175,10 +178,6 @@ def hostnamectl_sh(**kwargs):
         _cmd = 'sudo /usr/bin/hostnamectl ' + hctldict[item] + ' "' + kwargs[item] + '"'
         call(_cmd, shell=True)
 
-
-def shutdown():
-    from subprocess import check_call
-    check_call(['sudo', 'poweroff'])
 
 
 def get_cputemp_data(**kwargs):
@@ -449,7 +448,6 @@ def rainfall(**kwargs):
         bucket_counter = 0
 
     def calculate_rainfall():
-        # global BUCKET_SIZE
         rainfall = round(bucket_counter * BUCKET_SIZE, 0)
         return rainfall
 
@@ -461,7 +459,6 @@ def rainfall(**kwargs):
     rainfall_agregation_time = kwargs['rainfall_agregation_time']
     rainfalls = []
 
-    # global BUCKET_SIZE
     BUCKET_SIZE = 0.2794  # [mm]
 
     while True:
@@ -797,29 +794,17 @@ def main():
 
     m_config = {'config': (config_yaml['setup']),
                 'door_sensors': (config_yaml['door_sensors']),
-                'motion_sensors': (config_yaml['motion_sensors'])
+                'motion_sensors': (config_yaml['motion_sensors']),
+                'led_indicators': (config_yaml['led_indicators']),
                 }
 
     if bool(config['use_door_sensor']) is True:
         threading_function(doors_sensors, **m_config)
+        #doors_sensors(**m_config)
 
     if bool(config['use_motion_sensor']) is True:
         threading_function(motions_sensors, **m_config)
-
-    if bool(config['use_system_buttons']) is True:
-        global system_buttons_list
-        system_buttons_list = {}
-        for item in config_yaml.get("system_buttons"):
-            system_buttons_list[item] = Button(config_yaml['system_buttons'][item]['gpio_pin'], hold_time=config_yaml['system_buttons'][item]['hold_time'])
-
-    if bool(config['use_led_indicators']) is True:
-        global led_indicators_list
-        led_indicators_list = {}
-        for item in config_yaml.get("led_indicators"):
-            led_indicators_list[item] = LED(config_yaml['led_indicators'][item]['gpio_pin'])
-
-    if bool(config['use_system_buttons']) is True:
-        system_buttons_list['shutdown_button'].when_held = shutdown
+        #motions_sensors(**m_config)
 
     if bool(config['use_CPU_sensor']) is True:
         threading_function(get_cputemp_data, **config)
