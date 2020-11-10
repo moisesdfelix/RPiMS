@@ -69,14 +69,14 @@ def doors_sensors(**kwargs):
     for item in kwargs.get("door_sensors"):
         door_sensors_list[item] = Button(kwargs['door_sensors'][item]['gpio_pin'], hold_time=kwargs['door_sensors'][item]['hold_time'])
         redis_db.sadd("door_sensors", item)
-    for s in door_sensors_list:
-        if door_sensors_list[s].value == 0:
-            door_status_open(s, **kwargs['config'])
+    for k, v in door_sensors_list.items():
+        if v.value == 0:
+            door_status_open(k, **kwargs['config'])
         else:
-            door_status_close(s, **kwargs['config'])
-    for s in door_sensors_list:
-        door_sensors_list[s].when_held = lambda s=s: door_action_closed(s, **kwargs['config'])
-        door_sensors_list[s].when_released = lambda s=s: door_action_opened(s, **kwargs['config'])
+            door_status_close(k, **kwargs['config'])
+    for k, v in door_sensors_list.items():
+        v.when_held = lambda s=k: door_action_closed(s, **kwargs['config'])
+        v.when_released = lambda s=k: door_action_opened(s, **kwargs['config'])
 
     if bool(kwargs['config']['use_led_indicators']) is True:
         door_led_indicator = LED(kwargs['led_indicators']['door_led']['gpio_pin'])
@@ -113,15 +113,15 @@ def motions_sensors(**kwargs):
         motion_sensors_list[item] = MotionSensor(kwargs['motion_sensors'][item]['gpio_pin'])
         redis_db.sadd("motion_sensors", item)
 
-    for s in motion_sensors_list:
-        if motion_sensors_list[s].value == 0:
-            motion_sensor_when_no_motion(s, **kwargs['config'])
+    for k, v in motion_sensors_list.items():
+        if v.value == 0:
+            motion_sensor_when_no_motion(k, **kwargs['config'])
         else:
-            motion_sensor_when_motion(s, **kwargs['config'])
+            motion_sensor_when_motion(k, **kwargs['config'])
 
-    for s in motion_sensors_list:
-        motion_sensors_list[s].when_motion = lambda s=s:motion_sensor_when_motion(s, **kwargs['config'])
-        motion_sensors_list[s].when_no_motion = lambda s=s:motion_sensor_when_no_motion(s, **kwargs['config'])
+    for k, v in motion_sensors_list.items():
+        v.when_motion = lambda s=k:motion_sensor_when_motion(k, **kwargs['config'])
+        v.when_no_motion = lambda s=k:motion_sensor_when_no_motion(k, **kwargs['config'])
 
     if bool(kwargs['config']['use_led_indicators']) is True:
         motion_led_indicator = LED(kwargs['led_indicators']['motion_led']['gpio_pin'])
