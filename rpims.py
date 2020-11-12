@@ -23,21 +23,21 @@ def doors_sensors(**kwargs):
     def door_action_closed(door_id, **kwargs):
         lconfig = dict(kwargs)
         redis_db.set(str(door_id), 'close')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(door_id) + " has been closed!")
-        if bool(kwargs['use_zabbix_sender']) is True:
+        if bool(kwargs['config']['use_zabbix_sender']) is True:
             zabbix_sender_call('info_when_door_has_been_closed', door_id)
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             if detect_no_alarms(**lconfig):
                 av_stream('stop')
 
     def door_action_opened(door_id, **kwargs):
         redis_db.set(str(door_id), 'open')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(door_id) + " has been opened!")
-        if bool(kwargs['use_zabbix_sender']) is True:
+        if bool(kwargs['config']['use_zabbix_sender']) is True:
             zabbix_sender_call('info_when_door_has_been_opened', door_id)
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             if bool(kwargs['use_picamera_recording']) is True:
                 av_stream('stop')
                 av_recording()
@@ -45,21 +45,21 @@ def doors_sensors(**kwargs):
 
     def door_status_open(door_id, **kwargs):
         redis_db.set(str(door_id), 'open')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(door_id) + " is opened!")
-        if bool(kwargs['use_zabbix_sender']) is True:
+        if bool(kwargs['config']['use_zabbix_sender']) is True:
             zabbix_sender_call('info_when_door_is_opened', door_id)
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             av_stream('start')
 
     def door_status_close(door_id, **kwargs):
         lconfig = dict(kwargs)
         redis_db.set(str(door_id), 'close')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(door_id) + " is closed!")
-        if bool(kwargs['use_zabbix_sender']) is True:
+        if bool(kwargs['config']['use_zabbix_sender']) is True:
             zabbix_sender_call('info_when_door_is_closed', door_id)
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             if detect_no_alarms(**lconfig):
                 av_stream('stop')
 
@@ -70,13 +70,13 @@ def doors_sensors(**kwargs):
 
     for k, v in door_sensors_list.items():
         if v.value == 0:
-            door_status_open(k, **kwargs['config'])
+            door_status_open(k, **kwargs)
         else:
-            door_status_close(k, **kwargs['config'])
+            door_status_close(k, **kwargs)
 
     for k, v in door_sensors_list.items():
-        v.when_held = lambda s=k: door_action_closed(s, **kwargs['config'])
-        v.when_released = lambda s=k: door_action_opened(s, **kwargs['config'])
+        v.when_held = lambda s=k: door_action_closed(s, **kwargs)
+        v.when_released = lambda s=k: door_action_opened(s, **kwargs)
 
     if bool(kwargs['config']['use_led_indicators']) is True:
         door_led_indicator = LED(kwargs['led_indicators']['door_led']['gpio_pin'])
@@ -91,19 +91,19 @@ def motions_sensors(**kwargs):
 
     def motion_sensor_when_motion(ms_id, **kwargs):
         redis_db.set(str(ms_id), 'motion')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(ms_id) + ": motion was detected")
-        if bool(kwargs['use_zabbix_sender']) is True:
+        if bool(kwargs['config']['use_zabbix_sender']) is True:
             zabbix_sender_call('info_when_motion', ms_id)
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             av_stream('start')
 
     def motion_sensor_when_no_motion(ms_id, **kwargs):
         lconfig = dict(kwargs)
         redis_db.set(str(ms_id), 'nomotion')
-        if bool(kwargs['verbose']) is True:
+        if bool(kwargs['config']['verbose']) is True:
             print("The " + str(ms_id) + ": no motion")
-        if bool(kwargs['use_picamera']) is True:
+        if bool(kwargs['config']['use_picamera']) is True:
             if detect_no_alarms(**lconfig):
                 av_stream('stop')
 
@@ -114,13 +114,13 @@ def motions_sensors(**kwargs):
 
     for k, v in motion_sensors_list.items():
         if v.value == 0:
-            motion_sensor_when_no_motion(k, **kwargs['config'])
+            motion_sensor_when_no_motion(k, **kwargs)
         else:
-            motion_sensor_when_motion(k, **kwargs['config'])
+            motion_sensor_when_motion(k, **kwargs)
 
     for k, v in motion_sensors_list.items():
-        v.when_motion = lambda s=k:motion_sensor_when_motion(k, **kwargs['config'])
-        v.when_no_motion = lambda s=k:motion_sensor_when_no_motion(k, **kwargs['config'])
+        v.when_motion = lambda s=k:motion_sensor_when_motion(k, **kwargs)
+        v.when_no_motion = lambda s=k:motion_sensor_when_no_motion(k, **kwargs)
 
     if bool(kwargs['config']['use_led_indicators']) is True:
         motion_led_indicator = LED(kwargs['led_indicators']['motion_led']['gpio_pin'])
@@ -132,22 +132,34 @@ def detect_no_alarms(**kwargs):
     if bool(kwargs['config']['use_door_sensor']) is True and bool(kwargs['config']['use_motion_sensor']) is True:
         door_sensor_values = []
         motion_sensor_values = []
-        for k, v in kwargs['door_sensors'].items:
-            door_sensor_values.append(v.value)
-        for k, v in kwargs['motion_sensors'].items:
-            motion_sensor_values.append(int(not v.value))
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'DoorSensor'):
+                door_sensor_values.append(kwargs['gpio'][item])
+        #for k, v in kwargs['door_sensors'].items:
+        #    door_sensor_values.append(v.value)
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'MotionSensor'):
+                motion_sensor_values.append(kwargs['gpio'][item])
+        #for k, v in kwargs['motion_sensors'].items:
+        #    motion_sensor_values.append(int(not v.value))
         if all(door_sensor_values) and all(motion_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is True and bool(kwargs['use_motion_sensor']) is False:
         door_sensor_values = []
-        for k, v in kwargs['door_sensors'].items:
-            door_sensor_values.append(v.value)
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'DoorSensor'):
+                door_sensor_values.append(kwargs['gpio'][item])
+        #for k, v in kwargs['door_sensors'].items:
+        #    door_sensor_values.append(v.value)
         if all(door_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is False and bool(kwargs['use_motion_sensor']) is True:
         motion_sensor_values = []
-        for k, v in kwargs['motion_sensors'].items:
-            motion_sensor_values.append(int(not v.value))
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'MotionSensor'):
+                motion_sensor_values.append(kwargs['gpio'][item])
+        #for k, v in kwargs['motion_sensors'].items:
+        #    motion_sensor_values.append(int(not v.value))
         if all(motion_sensor_values):
             return True
 
@@ -774,12 +786,18 @@ def main():
     config = config_yaml.get("setup")
     gpio = config_yaml.get("gpio")
 
+#    m_config = {'config': (config_yaml['setup']),
+#                'door_sensors': (config_yaml['door_sensors']),
+#                'motion_sensors': (config_yaml['motion_sensors']),
+#                'led_indicators': (config_yaml['led_indicators']),
+#                'gpio': gpio,
+#                }
+
     m_config = {'config': (config_yaml['setup']),
-                'door_sensors': (config_yaml['door_sensors']),
-                'motion_sensors': (config_yaml['motion_sensors']),
                 'led_indicators': (config_yaml['led_indicators']),
                 'gpio': gpio,
                 }
+
 
     # redis_db.flushdb()
     for key in redis_db.scan_iter("motion_sensor_*"):
