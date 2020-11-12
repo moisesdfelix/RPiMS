@@ -64,16 +64,16 @@ def doors_sensors(**kwargs):
                 av_stream('stop')
 
     door_sensors_list = {}
-    redis_db.delete("door_sensors")
+    for item in kwargs.get("gpio"):
+        if (kwargs['gpio'][item]['type'] == 'DoorSensor'):
+            door_sensors_list[item] = Button(kwargs['gpio'][item]['gpio_pin'], hold_time=int(kwargs['gpio'][item]['hold_time']))
 
-    for item in kwargs.get("door_sensors"):
-        door_sensors_list[item] = Button(kwargs['door_sensors'][item]['gpio_pin'], hold_time=kwargs['door_sensors'][item]['hold_time'])
-        redis_db.sadd("door_sensors", item)
     for k, v in door_sensors_list.items():
         if v.value == 0:
             door_status_open(k, **kwargs['config'])
         else:
             door_status_close(k, **kwargs['config'])
+
     for k, v in door_sensors_list.items():
         v.when_held = lambda s=k: door_action_closed(s, **kwargs['config'])
         v.when_released = lambda s=k: door_action_opened(s, **kwargs['config'])
@@ -108,10 +108,9 @@ def motions_sensors(**kwargs):
                 av_stream('stop')
 
     motion_sensors_list = {}
-    redis_db.delete("motion_sensors")
-    for item in kwargs.get("motion_sensors"):
-        motion_sensors_list[item] = MotionSensor(kwargs['motion_sensors'][item]['gpio_pin'])
-        redis_db.sadd("motion_sensors", item)
+    for item in kwargs.get("gpio"):
+        if (kwargs['gpio'][item]['type'] == 'MotionSensor'):
+            motion_sensors_list[item] = MotionSensor(kwargs['gpio'][item]['gpio_pin'])
 
     for k, v in motion_sensors_list.items():
         if v.value == 0:
@@ -761,6 +760,7 @@ def main():
     from gpiozero import LED
     from signal import pause
     import sys
+    import json
 
     print('# RPiMS is running #')
     try:
@@ -769,34 +769,39 @@ def main():
         print("Error connection", err)
         sys.exit(1)
 
-    # redis_db.flushdb()
-
-    for key in redis_db.scan_iter("motion_sensor_*"):
-        redis_db.delete(key)
-    for key in redis_db.scan_iter("door_sensor_*"):
-        redis_db.delete(key)
-
     config_yaml = config_load('/var/www/html/conf/rpims.yaml')
 
-    config = config_yaml['setup']
-    zabbix_agent = config_yaml['zabbix_agent']
-    hostnamectl_sh(**zabbix_agent)
-
-    for s in config:
-        redis_db.set(s, str(config[s]))
-        if bool(config['verbose']) is True:
-            print(s + ' = ' + str(config[s]))
-
-    for s in zabbix_agent:
-        redis_db.set(s, str(zabbix_agent[s]))
-        if bool(config['verbose']) is True:
-            print(s + ' = ' + str(zabbix_agent[s]))
+    zabbix_agent = config_yaml.get("zabbix_agent")
+    config = config_yaml.get("setup")
+    gpio = config_yaml.get("gpio")
 
     m_config = {'config': (config_yaml['setup']),
                 'door_sensors': (config_yaml['door_sensors']),
                 'motion_sensors': (config_yaml['motion_sensors']),
                 'led_indicators': (config_yaml['led_indicators']),
+                'gpio': gpio,
                 }
+
+    # redis_db.flushdb()
+    for key in redis_db.scan_iter("motion_sensor_*"):
+        redis_db.delete(key)
+    for key in redis_db.scan_iter("door_sensor_*"):
+        redis_db.delete(key)
+
+    redis_db.delete('gpio')
+    redis_db.set('gpio', json.dumps(gpio))
+
+    for k, v in config.items():
+        redis_db.set(k, str(v))
+        if bool(config['verbose']) is True:
+            print(k + ' = ' + str(v))
+
+    for k, v in zabbix_agent.items():
+        redis_db.set(k, str(v))
+        if bool(config['verbose']) is True:
+            print(k + ' = ' + str(v))
+
+    hostnamectl_sh(**zabbix_agent)
 
     if bool(config['use_door_sensor']) is True:
         threading_function(doors_sensors, **m_config)
