@@ -757,7 +757,6 @@ def use_logger():
 
 
 def main():
-    from gpiozero import LED
     from signal import pause
     import sys
     import json
