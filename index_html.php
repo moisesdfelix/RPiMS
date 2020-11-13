@@ -13,7 +13,6 @@
 <div class="rpimsbg">
 <div class="header"></div>
 
-
 <div class="rpims">
 
 <div class="dropdown">
@@ -35,7 +34,6 @@
 </div>
 
 </div>
-
 
 
 <?php if ($rpims["use_BME280_sensor"] == "True") {?>
