@@ -7,7 +7,8 @@ setup:
   use_door_sensor: true
   use_motion_sensor: true
   use_system_buttons: false
-  use_led_indicators: true
+  use_door_led_indicator: true
+  use_motion_led_indicator: true
   use_CPU_sensor: true
   use_BME280_sensor: false
   use_DS18B20_sensor: false
@@ -43,7 +44,7 @@ gpio:
     hold_time: "1"
   GPIO_6:
     gpio_pin: "6"
-    type: DoorSensor
+    type: MotionSensor
     name: front door
     hold_time: "1"
   GPIO_12:
@@ -52,13 +53,13 @@ gpio:
     name: door led
   GPIO_13:
     gpio_pin: "13"
-    type: DoorSensor
+    type: MotionSensor
     name: back door
     hold_time: "1"
   GPIO_16:
     gpio_pin: "16"
-    type: DoorSensor
-    name: Shutdown button
+    type: MotionSensor
+    name: button
     hold_time: "5"
   GPIO_18:
     gpio_pin: "18"
@@ -73,17 +74,17 @@ gpio:
     gpio_pin: "20"
     type: MotionSensor
     name: saloon
-    hold_time: ""
+    hold_time: "1"
   GPIO_21:
     gpio_pin: "21"
     type: MotionSensor
     name: bathroom
-    hold_time: ""
+    hold_time: "1"
   GPIO_26:
     gpio_pin: "26"
     type: MotionSensor
     name: not used
-    hold_time: ""
+    hold_time: "1"
 zabbix_agent:
   zabbix_server: zabbix.example.com
   zabbix_server_active: zabbix.example.com

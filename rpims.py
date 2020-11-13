@@ -78,7 +78,7 @@ def doors_sensors(**kwargs):
         v.when_held = lambda s=k: door_action_closed(s, **kwargs)
         v.when_released = lambda s=k: door_action_opened(s, **kwargs)
 
-    if bool(kwargs['config']['use_led_indicators']) is True:
+    if bool(kwargs['config']['use_door_led_indicator']) is True:
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'door_led'):
                 door_led_indicator = LED(kwargs['gpio'][item]['gpio_pin'])
@@ -124,7 +124,7 @@ def motions_sensors(**kwargs):
         v.when_motion = lambda s=k:motion_sensor_when_motion(k, **kwargs)
         v.when_no_motion = lambda s=k:motion_sensor_when_no_motion(k, **kwargs)
 
-    if bool(kwargs['config']['use_led_indicators']) is True:
+    if bool(kwargs['config']['use_motion_led_indicator']) is True:
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'motion_led'):
                 motion_led_indicator = LED(kwargs['gpio'][item]['gpio_pin'])
