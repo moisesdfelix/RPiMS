@@ -810,8 +810,10 @@ def main():
     redis_db.flushdb()
     redis_db.set('gpio', json.dumps(gpio))
     redis_db.set('config', json.dumps(config))
+    redis_db.set('zabbix_agent', json.dumps(zabbix_agent))
 
     get_hostip()
+    hostnamectl_sh(**zabbix_agent)
 
     for k, v in config.items():
         #redis_db.set(k, str(v))
@@ -819,7 +821,7 @@ def main():
             print(k + ' = ' + str(v))
 
     for k, v in zabbix_agent.items():
-        redis_db.set(k, str(v))
+        #redis_db.set(k, str(v))
         if bool(config['verbose']) is True:
             print(k + ' = ' + str(v))
 
