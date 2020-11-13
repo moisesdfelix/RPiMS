@@ -794,6 +794,9 @@ def main():
 
     redis_db.delete('gpio')
     redis_db.set('gpio', json.dumps(gpio))
+    redis_db.delete('config')
+    redis_db.set('config', json.dumps(config))
+
 
     for k, v in config.items():
         redis_db.set(k, str(v))
