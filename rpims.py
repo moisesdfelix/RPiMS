@@ -15,6 +15,22 @@
 
 # --- Functions ---
 
+def system_buttons(**kwargs):
+    from signal import pause
+    from gpiozero import Button
+
+    def shutdown():
+        from subprocess import check_call
+        check_call(['sudo', 'poweroff'])
+
+    system_buttons_list = {}
+    for item in kwargs.get("gpio"):
+        if (kwargs['gpio'][item]['type'] == 'ShutdownButton'):
+            system_buttons_list['shutdown_button'] = Button(kwargs['gpio'][item]['gpio_pin'], hold_time=int(kwargs['gpio'][item]['hold_time']))
+    system_buttons_list['shutdown_button'].when_held = shutdown
+    pause()
+
+
 def doors_sensors(**kwargs):
     from signal import pause
     from gpiozero import Button, LED
@@ -185,6 +201,11 @@ def hostnamectl_sh(**kwargs):
         _cmd = 'sudo /usr/bin/hostnamectl ' + hctldict[item] + ' "' + kwargs[item] + '"'
         call(_cmd, shell=True)
 
+
+def get_hostip():
+    from subprocess import call
+    _cmd = '/home/pi/scripts/RPiMS/gethostip.sh'
+    call(_cmd, shell=True)
 
 
 def get_cputemp_data(**kwargs):
@@ -790,6 +811,8 @@ def main():
     redis_db.set('gpio', json.dumps(gpio))
     redis_db.set('config', json.dumps(config))
 
+    get_hostip()
+
     for k, v in config.items():
         #redis_db.set(k, str(v))
         if bool(config['verbose']) is True:
@@ -809,6 +832,9 @@ def main():
     if bool(config['use_motion_sensor']) is True:
         threading_function(motions_sensors, **m_config)
         #motions_sensors(**m_config)
+
+    if bool(config['use_system_buttons']) is True:
+        threading_function(system_buttons, **m_config)
 
     if bool(config['use_CPU_sensor']) is True:
         threading_function(get_cputemp_data, **config)
