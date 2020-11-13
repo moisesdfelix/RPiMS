@@ -782,24 +782,16 @@ def main():
     config = config_yaml.get("setup")
     gpio = config_yaml.get("gpio")
 
-    m_config = {'config': (config_yaml['setup']),
+    m_config = {'config': config,
                 'gpio': gpio,
                 }
 
-    # redis_db.flushdb()
-    for key in redis_db.scan_iter("motion_sensor_*"):
-        redis_db.delete(key)
-    for key in redis_db.scan_iter("door_sensor_*"):
-        redis_db.delete(key)
-
-    redis_db.delete('gpio')
+    redis_db.flushdb()
     redis_db.set('gpio', json.dumps(gpio))
-    redis_db.delete('config')
     redis_db.set('config', json.dumps(config))
 
-
     for k, v in config.items():
-        redis_db.set(k, str(v))
+        #redis_db.set(k, str(v))
         if bool(config['verbose']) is True:
             print(k + ' = ' + str(v))
 
