@@ -139,13 +139,9 @@ def detect_no_alarms(**kwargs):
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'DoorSensor'):
                 door_sensor_values.append(kwargs['gpio'][item])
-        #for k, v in kwargs['door_sensors'].items:
-        #    door_sensor_values.append(v.value)
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'MotionSensor'):
                 motion_sensor_values.append(kwargs['gpio'][item])
-        #for k, v in kwargs['motion_sensors'].items:
-        #    motion_sensor_values.append(int(not v.value))
         if all(door_sensor_values) and all(motion_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is True and bool(kwargs['use_motion_sensor']) is False:
@@ -153,8 +149,6 @@ def detect_no_alarms(**kwargs):
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'DoorSensor'):
                 door_sensor_values.append(kwargs['gpio'][item])
-        #for k, v in kwargs['door_sensors'].items:
-        #    door_sensor_values.append(v.value)
         if all(door_sensor_values):
             return True
     if bool(kwargs['use_door_sensor']) is False and bool(kwargs['use_motion_sensor']) is True:
@@ -162,8 +156,6 @@ def detect_no_alarms(**kwargs):
         for item in kwargs.get("gpio"):
             if (kwargs['gpio'][item]['type'] == 'MotionSensor'):
                 motion_sensor_values.append(kwargs['gpio'][item])
-        #for k, v in kwargs['motion_sensors'].items:
-        #    motion_sensor_values.append(int(not v.value))
         if all(motion_sensor_values):
             return True
 
