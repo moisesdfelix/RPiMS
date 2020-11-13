@@ -79,7 +79,9 @@ def doors_sensors(**kwargs):
         v.when_released = lambda s=k: door_action_opened(s, **kwargs)
 
     if bool(kwargs['config']['use_led_indicators']) is True:
-        door_led_indicator = LED(kwargs['led_indicators']['door_led']['gpio_pin'])
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'door_led'):
+                door_led_indicator = LED(kwargs['gpio'][item]['gpio_pin'])
         door_led_indicator.source = all_values(*door_sensors_list.values())
     pause()
 
@@ -123,7 +125,9 @@ def motions_sensors(**kwargs):
         v.when_no_motion = lambda s=k:motion_sensor_when_no_motion(k, **kwargs)
 
     if bool(kwargs['config']['use_led_indicators']) is True:
-        motion_led_indicator = LED(kwargs['led_indicators']['motion_led']['gpio_pin'])
+        for item in kwargs.get("gpio"):
+            if (kwargs['gpio'][item]['type'] == 'motion_led'):
+                motion_led_indicator = LED(kwargs['gpio'][item]['gpio_pin'])
         motion_led_indicator.source = any_values(*motion_sensors_list.values())
     pause()
 
@@ -786,18 +790,9 @@ def main():
     config = config_yaml.get("setup")
     gpio = config_yaml.get("gpio")
 
-#    m_config = {'config': (config_yaml['setup']),
-#                'door_sensors': (config_yaml['door_sensors']),
-#                'motion_sensors': (config_yaml['motion_sensors']),
-#                'led_indicators': (config_yaml['led_indicators']),
-#                'gpio': gpio,
-#                }
-
     m_config = {'config': (config_yaml['setup']),
-                'led_indicators': (config_yaml['led_indicators']),
                 'gpio': gpio,
                 }
-
 
     # redis_db.flushdb()
     for key in redis_db.scan_iter("motion_sensor_*"):

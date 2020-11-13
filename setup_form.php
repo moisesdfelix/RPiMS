@@ -52,12 +52,6 @@ $setup = array(
     "rainfall_agregation_time" => (int)$_POST['rainfall_agregation_time'],
 );
 
-$door_sensors = array();
-$system_buttons = array();
-$motion_sensors = array();
-$led_indicators = array();
-$reserved_gpio = array();
-
 $GPIO = array(
     "GPIO_5" => $_POST['GPIO_5'],
     "GPIO_6" => $_POST['GPIO_6'],
@@ -70,56 +64,6 @@ $GPIO = array(
     "GPIO_21" => $_POST['GPIO_21'],
     "GPIO_26" => $_POST['GPIO_26'],
 );
-
-$count = 1;
-foreach ($GPIO as $key => $value) {
-    if ($value['type'] == 'DoorSensor'){
-        $varname = 'door_sensor_'.$count;
-        $door_sensors[$varname]['gpio_pin'] = (int)$value['gpio_pin'];
-        $door_sensors[$varname]['hold_time'] = (int)$value['hold_time'];
-        $door_sensors[$varname]['name'] = $value['name'];
-    $count++;
-}
-}
-
-$count = 1;
-foreach ($GPIO as $key => $value) {
-    if ($value['type'] == 'Reserved'){
-        $varname = 'reserved_'.$count;
-        $reserved_gpio[$varname]['gpio_pin'] = (int)$value['gpio_pin'];
-        $reserved_gpio[$varname]['name'] = $value['name'];
-    $count++;
-}
-}
-
-$count = 1;
-foreach ($GPIO as $key => $value) {
-    if ($value['type'] == 'MotionSensor'){
-        $varname = 'motion_sensor_'.$count;
-        $motion_sensors[$varname]['gpio_pin'] = (int)$value['gpio_pin'];
-        $motion_sensors[$varname]['name'] = $value['name'];
-    $count++;
-}
-}
-
-$arrayName = 'shutdown_button';
-foreach ($GPIO as $key => $value) {
-    if ($value['type'] == 'ShutdownButton'){
-        $system_buttons[$arrayName] = [];
-        $system_buttons[$arrayName]['gpio_pin'] = (int)$value['gpio_pin'] ;
-        $system_buttons[$arrayName]['hold_time'] = (int)$value['hold_time'];
-        $system_buttons[$arrayName]['name'] = $value['name'];
-    }
-}
-
-foreach ($GPIO as $key => $value) {
-    if ($value['type'] == 'door_led'){
-        $led_indicators['door_led']['gpio_pin'] = (int)$value['gpio_pin'];
-}
-    if ($value['type'] == 'motion_led'){
-        $led_indicators['motion_led']['gpio_pin'] = (int)$value['gpio_pin'];
-}
-}
 
 $zabbix_agent = array(
     "zabbix_server" => $_POST['zabbix_server'],
@@ -138,13 +82,8 @@ $zabbix_agent = array(
 
 $rpims = array(
     "setup" => $setup,
-    "led_indicators" => $led_indicators,
-    "door_sensors"   => $door_sensors,
-    "motion_sensors" => $motion_sensors,
-    "system_buttons" => $system_buttons,
-    "reserved_gpio"  => $reserved_gpio,
-    "zabbix_agent"   => $zabbix_agent,
     "gpio"           => $GPIO,
+    "zabbix_agent"   => $zabbix_agent,
 );
 
 yaml_emit_file ("/var/www/html/conf/rpims.yaml", $rpims, YAML_UTF8_ENCODING, YAML_ANY_BREAK);
@@ -161,7 +100,6 @@ $TLSConnect="TLSConnect=".$zabbix_agent["TLSConnect"]."\n";
 $TLSAccept="TLSAccept=".$zabbix_agent["TLSAccept"]."\n";
 $Timeout="Timeout=".$zabbix_agent["Timeout"]."\n";
 $TLSPSKFile="TLSPSKFile=".$zabbix_agent["TLSPSKFile"]."\n";
-
 $TLSPSK=$zabbix_agent["TLSPSK"];
 
 fwrite($zabconfile, $Server);
@@ -172,7 +110,6 @@ fwrite($zabconfile, $TLSPSKFile);
 fwrite($zabconfile, $TLSConnect);
 fwrite($zabconfile, $TLSAccept);
 fwrite($zabconfile, $Timeout);
-
 fwrite($zabpskfile, $TLSPSK);
 
 fclose($zabconfile);
