@@ -9,13 +9,14 @@ else
     exit
 fi
 
+sudo raspi-config nonint do_i2c 0
+sudo raspi-config nonint do_spi 0
+sudo raspi-config nonint do_onewire 0
+sudo raspi-config nonint do_camera 0
+#raspi-config nonint do_serial 1
+sudo raspi-config nonint do_change_timezone Europe/Warsaw
+
 sudo apt-get update && sudo apt-get upgrade -y
-
-#sudo raspi-config nonint do_i2c 0
-#echo "dtoverlay=w1-gpio" | sudo tee -a /boot/config.txt
-#echo "i2c-dev" | sudo tee -a /etc/modules
-#echo "w1-therm" | sudo tee -a /etc/modules
-
 
 installdir=/home/pi/scripts/RPiMS
 wwwdir=/var/www/html
@@ -30,7 +31,7 @@ for file in $(curl -sS https://raw.githubusercontent.com/darton/RPiMS/master/fil
    curl -sS https://raw.githubusercontent.com/darton/RPiMS/master/$file > $installdir/$file
 done
 curl -sS https://www.w3schools.com/w3css/4/w3.css > $installdir/w3.css
-curl -ss https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js > $wwwdir/jquery.min.js
+curl -ss https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js > $installdir/jquery.min.js
 chmod u+x $installdir/*.py $installdir/*.sh
 
 sudo apt-get -y install git python3-gpiozero python3-pip build-essential python3-dev python3-numpy python3-picamera python3-w1thermsensor python3-automationhat
@@ -115,3 +116,26 @@ sudo apt-get -y install libgpiod2 libgpiod-dev
 #sudo cp libgpiod_pulsein libgpiod_pulsein.bak
 #sudo cp ~/libgpiod_pulsein/src/libgpiod_pulsein ./
 #
+
+_IP=$(ip route get 1.1.1.1 | awk '{print $7}')
+echo ""
+echo "-------------------------------------"
+echo "Installation successfully completed !"
+echo "-------------------------------------"
+echo ""
+echo "After restarting open http://$_IP/setup or http://127.0.0.1 to configure RPiMS"
+echo ""
+echo "Do you want to reboot RPiMS now ?"
+echo ""
+
+read -r -p "$1 [y/N] " response < /dev/tty
+
+if [[ $response =~ ^(yes|y|Y)$ ]]; then
+    sudo reboot
+else
+    echo ""
+    echo "Run this command manually: sudo reboot"
+    echo ""
+    echo "After restarting open http://$_IP/setup or http://127.0.0.1 to configure RPiMS"
+    exit
+fi
